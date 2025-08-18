@@ -1,5 +1,5 @@
 WIMFREE Quantum Chat Platform
-WIMFREE is a cutting-edge, quantum-secure platform for private chat and streaming, designed to deliver end-to-end encrypted (E2EE) communication with zero-knowledge architecture. Developed by WimLee115, a certified security expert and web3 innovator, with inspiration from PrivacyVerzetNL’s privacy advocacy, WIMFREE empowers users to connect securely across web, desktop, and mobile. Imagine it as a web3 RPG: you’re the hero, wielding quantum encryption as your sword, zero-knowledge servers as your shield, and low-latency streaming as your agility boost, ensuring privacy in every quest.
+WIMFREE is a cutting-edge, quantum-secure platform for private chat and streaming, designed to deliver end-to-end encrypted (E2EE) communication with zero-knowledge architecture. Developed by WimLee115, with inspiration from PrivacyVerzetNL, WIMFREE empowers users to connect securely across web, desktop, and mobile. Imagine it as a web3 RPG: you’re the hero, wielding quantum encryption as your sword, zero-knowledge servers as your shield, and low-latency streaming as your agility boost, ensuring privacy in every quest.
 Features
 
 Post-Quantum Encryption: Leverages NIST-approved algorithms (Kyber-1024, Dilithium5, Falcon-1024) to protect against quantum threats.
