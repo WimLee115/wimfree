@@ -1,131 +1,231 @@
-WIMFREE Quantum Chat Platform
-WIMFREE is a cutting-edge, quantum-secure platform for private chat and streaming, designed to deliver end-to-end encrypted (E2EE) communication with zero-knowledge architecture. Developed by WimLee115, with inspiration from PrivacyVerzetNL, WIMFREE empowers users to connect securely across web, desktop, and mobile. Imagine it as a web3 RPG: you’re the hero, wielding quantum encryption as your sword, zero-knowledge servers as your shield, and low-latency streaming as your agility boost, ensuring privacy in every quest.
-Features
+# Quantum Chat Platform
 
-Post-Quantum Encryption: Leverages NIST-approved algorithms (Kyber-1024, Dilithium5, Falcon-1024) to protect against quantum threats.
-End-to-End Encrypted Chat: Secure, real-time messaging with perfect forward secrecy, powered by WebSocket and Argon2 password hashing.
-Secure Streaming: Low-latency video/audio streams protected by quantum-safe keys, ideal for private broadcasts or gaming sessions.
-Invite-Only Access: Restrict chats and streams to trusted users, like an exclusive guild in an RPG.
-Cross-Platform Support: Seamlessly switch between web (modern browsers), desktop (Windows, macOS, Linux), and mobile (iOS, Android).
-Zero-Knowledge Architecture: Servers store no sensitive data, ensuring maximum privacy, inspired by PrivacyVerzetNL.
-Developer-Friendly: Built with Rust (Axum), React, and Vite, with an automated installer for easy deployment.
+Welcome to **Quantum Chat**, a secure, decentralized, web3-ready chat platform built for the next-gen RPG guild experience! Powered by Rust, Tauri, PostgreSQL, and Node.js, this app delivers quantum-encrypted communication for your web, mobile, and desktop adventures. Whether you're a bug bounty hunter securing the backend or a game dev crafting epic RPGs, this README guides you through setup, configuration, and deployment with zero exploits. Let's build your empire! 🚀
 
-System Requirements
+## Prerequisites
 
-Operating System: Ubuntu 20.04+, Windows 10+, macOS 10.15+.
-Tools: Docker, Node.js 18+, Rust 1.70+, PostgreSQL 13+, Redis 6+.
-Browser: Chrome, Firefox, or any modern browser supporting WebRTC.
-Mobile: iOS 13+ or Android 8.0+ (mobile apps coming soon).
+Before diving into the quantum realm, ensure you have the following tools installed:
 
-Installation
-WIMFREE provides an automated installer (build_and_run.sh) to set up the platform with minimal effort. Follow these steps to deploy locally:
+- **Rust**: Version 1.89.0 or higher (`rustc --version`)
+  - Install via: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+- **Node.js**: Version 18 or higher (`node -v`)
+  - Install via nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && nvm install 18`
+- **PostgreSQL**: Version 17.5 or higher (`psql --version`)
+  - Install on Debian/Ubuntu: `sudo apt update && sudo apt install -y postgresql postgresql-contrib`
+- **bc**: For progress bar calculations
+  - Install: `sudo apt install bc`
+- **Development Tools**:
+  - `cargo-watch`: `cargo install cargo-watch`
+  - `sqlx-cli`: `cargo install sqlx-cli --no-default-features --features postgres,rustls`
+  - `tauri-cli`: `cargo install tauri-cli`
+- **Redis**: For session management
+  - Install: `sudo apt install redis-server`
+- **OpenSSL**: For generating JWT secrets
+  - Install: `sudo apt install openssl`
 
-Download the Installer:
+Ensure you're running as a non-root user (e.g., `wimlee`) with `sudo` privileges for system-level operations.
 
-Clone the repository or download build_and_run.sh from GitHub.
-Ensure the script is in ~/quantum-chat-platform.
+## Project Structure
 
+```
+quantum-chat-platform/
+├── backend/                    # Rust backend with Axum and SQLx
+│   ├── migrations/             # PostgreSQL migration files
+│   ├── src/                    # Backend source code
+│   └── .env                    # Environment variables (DATABASE_URL, REDIS_URL, JWT_SECRET)
+├── frontend/
+│   ├── web/                    # Web frontend (Vite + React)
+│   ├── mobile/                 # Mobile app (React Native + Expo)
+│   └── desktop/                # Desktop app (Tauri)
+├── start_and_test.sh           # Setup and test script
+└── README.md                   # This file
+```
 
-Run the Installer:
-chmod +x build_and_run.sh
-./build_and_run.sh --auto
+## Setup Instructions
 
+Follow these steps to set up and run Quantum Chat like a pro bug bounty hunter securing a smart contract!
 
-The --auto flag skips prompts and auto-stops local PostgreSQL/Redis if running.
-Use sudo only if required for Docker or permissions.
-Watch the progress bar and spinner for installation status.
+### 1. Clone the Repository
 
+```bash
+git clone https://github.com/WimLee115/quantum-chat-platform.git
+cd quantum-chat-platform
+```
 
-Access WIMFREE:
+### 2. Set Up Environment
 
-Open http://localhost:5173 in a browser for the React-based UI.
-The backend runs on http://localhost:3000 (test with curl http://localhost:3000/api/health).
+Copy the provided `start_and_test.sh` script into the project root and make it executable:
 
+```bash
+chmod +x start_and_test.sh
+```
 
-Generate Documentation:
+This script automates dependency installation, environment setup, database initialization, migrations, and server startup. It supports English (`en`) and Dutch (`nl`) prompts.
 
-Save generate_readme.py from the repository and run:python generate_readme.py
+### 3. Configure PostgreSQL
 
+Ensure PostgreSQL is running and accessible via Unix socket (`/var/run/postgresql/.s.PGSQL.5432`):
 
-This generates a user-focused README.md with setup and usage details.
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
 
+Verify the socket exists:
 
+```bash
+ls -l /var/run/postgresql/.s.PGSQL.5432
+```
 
-Usage
+Expected output:
+```
+srwxrwxrwx 1 postgres postgres 0 ... /var/run/postgresql/.s.PGSQL.5432
+```
 
-Create an Account:
+If the socket is in `/tmp`, update `backend/.env` later. Configure `pg_hba.conf` for trust authentication (development only):
 
-Sign up via the web UI with a username and strong password (hashed with Argon2).
-Quantum keypairs (Kyber/Dilithium) are auto-generated for secure communication.
+```bash
+sudo nano /etc/postgresql/17/main/pg_hba.conf
+```
 
+Add at the top:
+```
+local   all   wimlee   trust
+local   all   postgres trust
+host    all   wimlee   127.0.0.1/32   trust
+host    all   postgres 127.0.0.1/32   trust
+```
 
-Start a Chat or Stream:
+Restart PostgreSQL:
+```bash
+sudo systemctl restart postgresql
+```
 
-Chat: Create a private chat, invite users, and send E2EE messages via WebSocket.
-Stream: Launch a quantum-secure video/audio stream for invited users, powered by WebRTC.
-Badges: Earn “Privacy Hero” badges for completing secure sessions (RPG-inspired feature).
+### 4. Run the Setup Script
 
+Execute the setup script:
 
-Best Practices:
+```bash
+./start_and_test.sh
+```
 
-Use strong, unique passwords for maximum security.
-Share invites only with trusted users.
-Keep WIMFREE updated for the latest security patches.
+- **Language Choice**: Select `en` (English) or `nl` (Dutch).
+- **Sudo Prompts**: The script may request `sudo` for installing packages, fixing permissions, or updating PostgreSQL configs.
+- **Output**: Check `start_test_debug.log` for detailed logs.
 
+The script will:
+- Install dependencies (`bc`, Rust, Node.js, PostgreSQL, dev tools).
+- Create and configure `backend/.env` with:
+  - `DATABASE_URL=postgres://wimlee@/var/run/postgresql:5432/quantum_chat`
+  - `REDIS_URL=redis://localhost:6379`
+  - `JWT_SECRET=<randomly generated>`
+- Initialize the `quantum_chat` database.
+- Apply migrations (`create_users`, `create_quantum_keys`, `create_invitations`, `create_chats`, `streaming_features`).
+- Start servers (backend, web, mobile, desktop).
+- Run tests.
 
+### 5. Verify Database Setup
 
-Troubleshooting
+Check if the database and migrations are applied:
 
-Frontend Issues:
-If http://localhost:5173 fails, check Vite logs: cat frontend/web/dist/*.
-Verify @vitejs/plugin-react: ls frontend/web/node_modules/@vitejs/plugin-react.
-Clear npm cache: npm cache clean --force && npm install.
-Ensure Node 18+: node -v.
+```bash
+psql -U wimlee -h /var/run/postgresql -d quantum_chat -c "SELECT * FROM _sqlx_migrations;"
+```
 
+List tables:
+```bash
+psql -U wimlee -h /var/run/postgresql -d quantum_chat -c "\dt"
+```
 
-Database Issues:
-Check PostgreSQL logs: docker logs postgres.
-Test connectivity: docker exec -it postgres psql -U postgres -d wimfree.
-Verify migrations: ls backend/migrations/.
-Check DATABASE_URL: postgres://postgres:securepass@127.0.0.1:5432/wimfree.
-Check firewall: sudo ufw status and sudo ufw allow 5432.
+Expected tables:
+- `users`
+- `quantum_keys`
+- `invitations`
+- `chats`
 
+### 6. Access the App
 
-Backend Issues:
-Test API: curl http://localhost:3000/api/health.
-Check Rust PATH: echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc.
+Once the script completes, the servers will be running:
+- **Backend**: `http://localhost:8080`
+- **Web Frontend**: `http://localhost:5173` (Vite)
+- **Mobile**: Via Expo (scan QR code from `npm run start` in `frontend/mobile`)
+- **Desktop**: Tauri app (launched via `cargo tauri dev` in `frontend/desktop`)
 
+### 7. Troubleshooting
 
-Permissions:
-Fix ownership: sudo chown -R $USER:$USER ~/quantum-chat-platform.
+If the script fails, check `start_test_debug.log`:
 
+```bash
+cat start_test_debug.log
+```
 
-NPM Vulnerabilities:
-Run cd frontend/web && npm audit.
-Update packages in package.json (e.g., "vite": "^5.0.0") and run npm install.
+Common issues and fixes:
+- **Directory Not Found**:
+  ```bash
+  mkdir -p backend/migrations
+  sudo chown -R wimlee:wimlee backend
+  sudo chmod -R u+rw backend
+  ```
+- **PostgreSQL Connection**:
+  Test Unix socket:
+  ```bash
+  psql -U wimlee -h /var/run/postgresql -d quantum_chat -c "SELECT 1;"
+  ```
+  Test TCP fallback:
+  ```bash
+  psql -U wimlee -h localhost -d quantum_chat -c "SELECT 1;"
+  ```
+  Update `backend/.env` if socket is in `/tmp`:
+  ```bash
+  echo "DATABASE_URL=postgres://wimlee@/tmp:5432/quantum_chat" > backend/.env
+  ```
+- **Migration Errors**:
+  Run migrations manually:
+  ```bash
+  cd backend
+  sqlx migrate run --database-url postgres://wimlee@/var/run/postgresql:5432/quantum_chat --host /var/run/postgresql
+  ```
+  Check migration files:
+  ```bash
+  ls -l backend/migrations/
+  cat backend/migrations/*.sql
+  ```
+- **SQLx Issues**:
+  Update `sqlx-cli`:
+  ```bash
+  cargo install sqlx-cli --no-default-features --features postgres,rustls --force
+  ```
 
+If issues persist, share:
+- `pwd`
+- `ls -ld backend backend/migrations`
+- `ls -l backend/migrations/`
+- `cat backend/.env`
+- `cat backend/migrations/*.sql`
+- `sudo cat /etc/postgresql/17/main/pg_hba.conf`
+- `tail -n 50 start_test_debug.log`
 
+## Security Notes
 
-For further assistance, open an issue on GitHub or contact the community.
-Security
-WIMFREE is designed with security as the top priority, audited by WimLee115, a certified bug bounty hunter:
+- **Development**: Uses `trust` authentication in `pg_hba.conf` for simplicity. For production, switch to `md5`:
+  ```
+  host    all   wimlee   127.0.0.1/32   md5
+  ```
+- **.env**: Contains sensitive data (`JWT_SECRET`). Ensure `chmod 600 backend/.env`.
+- **Input Sanitization**: The setup script sanitizes inputs to prevent injection attacks.
+- **Permissions**: Backend and migration directories are set to `u+rw` for `wimlee`.
 
-End-to-End Encryption: Client-side encryption using NIST-approved quantum-resistant algorithms (placeholder: base64, production: liboqs for Kyber/Dilithium).
-Zero-Knowledge Servers: No sensitive data stored on servers, inspired by PrivacyVerzetNL.
-Secure Authentication: JWT with Argon2 password hashing (to be implemented in full backend).
-Content Security Policy (CSP): Add to vite.config.ts: contentSecurityPolicy: "script-src 'self'".
-Rate Limiting: Planned for WebSocket endpoints to prevent DDoS attacks.
-NPM Audit: Two moderate vulnerabilities in dev; fix for production with npm audit fix.
+## Contributing
 
-Contributing
-We welcome contributions to make WIMFREE the ultimate privacy platform:
+Found a bug? Squash it like a true bounty hunter! Submit issues or PRs to the repository. For web3 RPG features (e.g., NFT-based chat roles, blockchain key storage), ping the guild on Discord or X.
 
-Fork the repository and submit pull requests with features or bug fixes.
-Report issues or suggest improvements on GitHub.
-Join the community discussion, inspired by PrivacyVerzetNL’s privacy mission.
+## License
 
-License
-© 2025 WIMFREE Quantum Chat Platform. All rights reserved. Developed by WimLee115, with gratitude to PrivacyVerzetNL for privacy advocacy.
+MIT License – free to use, modify, and distribute. Build your quantum empire! 🌌
 
-About the Developer: WimLee115 is a cybersecurity expert and web3 innovator, holding certifications like OSCP, CISSP, CEH, and CCSP. With a passion for quantum-secure systems and web3 RPGs, WimLee115 crafts platforms like WIMFREE to empower users with privacy and security.
-Acknowledgments: Special thanks to PrivacyVerzetNL for inspiring WIMFREE’s zero-knowledge architecture and advocating for digital privacy.
+---
+
+**WimLee115's Quantum Chat Platform**  
+*Hunt bugs, secure the chain, and chat like a web3 legend!*  
+🥳 wimfree!!!! 🥳  
+🎆 🎇 🎆 🎇 🎆
